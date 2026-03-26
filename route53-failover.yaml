@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Solución al error de CNAME en Apex usando registros Alias con Failover.'
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: El ID de la Hosted Zone en Route 53 (ej. Z123456789).
+
+  DomainName:
+    Type: String
+    Default: ac-smart-energy.com
+    Description: El nombre de dominio (Apex).
+
+  PrimaryALBDNS:
+    Type: String
+    Description: DNS Name del ALB Principal.
+  
+  PrimaryALBHostedZoneId:
+    Type: String
+    Description: Canonical Hosted Zone ID del ALB Principal (ej. Z35W34VXG59L2Y).
+
+  SecondaryALBDNS:
+    Type: String
+    Description: DNS Name del ALB Secundario.
+
+  SecondaryALBHostedZoneId:
+    Type: String
+    Description: Canonical Hosted Zone ID del ALB Secundario.
+
+Resources:
+  # 1. Health Check para la Región Principal
+  PrimaryHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Type: HTTP
+        FullyQualifiedDomainName: !Ref PrimaryALBDNS
+        Port: 80
+        ResourcePath: /
+        RequestInterval: 30
+        FailureThreshold: 3
+
+  # 2. Registro ALIAS Primario (Failover PRIMARY)
+  PrimaryRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A # Cambiado de CNAME a A para permitir el Apex
+      SetIdentifier: "PrimaryRegion"
+      Failover: PRIMARY
+      HealthCheckId: !Ref PrimaryHealthCheck
+      AliasTarget:
+        DNSName: !Ref PrimaryALBDNS
+        HostedZoneId: !Ref PrimaryALBHostedZoneId
+        EvaluateTargetHealth: true
+
+  # 3. Registro ALIAS Secundario (Failover SECONDARY)
+  SecondaryRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A # Cambiado de CNAME a A
+      SetIdentifier: "SecondaryRegion"
+      Failover: SECONDARY
+      AliasTarget:
+        DNSName: !Ref SecondaryALBDNS
+        HostedZoneId: !Ref SecondaryALBHostedZoneId
+        EvaluateTargetHealth: true
+
+Outputs:
+  DomainURL:
+    Description: URL del dominio configurado
+    Value: !Ref DomainName

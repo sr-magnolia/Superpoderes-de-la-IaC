@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Configuración de DNS con registro Alias apuntando al ALB.'
+
+Parameters:
+  NetworkStackName:
+    Type: String
+    Default: MiProyecto-VPC-Stack
+    Description: Nombre del stack de red/VPC.
+
+  ComputeStackName:
+    Type: String
+    Default: MiProyecto-Compute-Stack
+    Description: Nombre del stack donde se creó el Load Balancer.
+
+  HostedZoneId:
+    Type: String
+    Description: ID de la Hosted Zone en Route 53 (ej. Z123456789).
+
+  DomainName:
+    Type: String
+    Default: ac-smart-energy.com
+    Description: El dominio que quieres usar.
+
+Resources:
+  # Registro Alias para el dominio principal (Apex)
+  AlbAliasRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        # Importamos el DNS del Load Balancer
+        DNSName: !ImportValue 
+          Fn::Sub: "${ComputeStackName}-ALBDNS"
+        # Importamos el ID de zona interno del Load Balancer
+        HostedZoneId: !ImportValue 
+          Fn::Sub: "${ComputeStackName}-ALBZoneID"
+        EvaluateTargetHealth: true
+
+  # Registro CNAME opcional para el subdominio 'www'
+  WwwAliasRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub "www.${DomainName}"
+      Type: A
+      AliasTarget:
+        DNSName: !Ref DomainName
+        HostedZoneId: !Ref HostedZoneId

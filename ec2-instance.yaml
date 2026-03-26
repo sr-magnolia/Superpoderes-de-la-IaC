@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Template para una instancia EC2 que consume valores exportados de la VPC.'
+
+Parameters:
+  NetworkStackName:
+    Type: String
+    Default: MiProyecto-VPC-Stack
+    Description: Nombre del stack de la VPC que exportó los valores (VPCID, PrivateSubnets, etc).
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues: [t3.micro, t3.small, t2.micro]
+    Description: Tipo de instancia EC2.
+
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64'
+
+Resources:
+  # 1. Creamos un Security Group dentro de la VPC exportada
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Permitir trafico HTTP y SSH
+      VpcId: !ImportValue 
+        Fn::Sub: "${NetworkStackName}-VPCID"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  # 2. Instancia EC2 en una de las subnets privadas exportadas
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref LatestAmiId
+      # Importamos la primera subnet de la lista de subnets privadas
+      # Nota: Como exportamos una lista separada por comas, usamos Select
+      SubnetId: !Select [ 0, !Split [ ",", !ImportValue { "Fn::Sub": "${NetworkStackName}-PrivateSubnets" } ] ]
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppServer"
+
+Outputs:
+  InstanceId:
+    Description: ID de la instancia creada
+    Value: !Ref MyEC2Instance
+  
+  PrivateIp:
+    Description: IP Privada de la instancia
+    Value: !GetAtt MyEC2Instance.PrivateIp
