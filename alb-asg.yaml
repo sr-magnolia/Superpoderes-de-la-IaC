@@ -29,6 +29,15 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ALB-SG"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   # SG para las Instancias (Solo acceso desde el ALB)
   InstanceSecurityGroup:
@@ -41,6 +50,15 @@ Resources:
           FromPort: 80
           ToPort: 80
           SourceSecurityGroupId: !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Instance-SG"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   # --- LOAD BALANCING ---
 
@@ -55,6 +73,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ALB"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -65,6 +89,15 @@ Resources:
       TargetType: instance
       HealthCheckPath: /
       HealthCheckIntervalSeconds: 30
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-TG"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -87,6 +120,17 @@ Resources:
         InstanceType: !Ref InstanceType
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${AWS::StackName}-Instance"
+              - Key: Owner
+                Value: !Ref "AWS::StackName"
+              - Key: TTL
+                Value: "1-Week"
+              - Key: Contact
+                Value: "team@example.com"
         UserData:
           Fn::Base64: |
             #!/bin/bash
@@ -112,6 +156,15 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ASG-Instance"
+          PropagateAtLaunch: true
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+          PropagateAtLaunch: true
+        - Key: TTL
+          Value: "1-Week"
+          PropagateAtLaunch: true
+        - Key: Contact
+          Value: "team@example.com"
           PropagateAtLaunch: true
 
 Outputs:

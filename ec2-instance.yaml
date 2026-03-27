@@ -34,6 +34,15 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Instance-SG"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   # 2. Instancia EC2 en una de las subnets privadas exportadas
   MyEC2Instance:
@@ -49,6 +58,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-AppServer"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
 Outputs:
   InstanceId:

@@ -39,6 +39,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-VPC"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -46,6 +52,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-IGW"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -64,6 +76,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-Public-SZ1"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -75,6 +93,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-Public-SZ2"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   # --- Subnets Privadas (AZ1 y AZ2) ---
   PrivateSubnet1:
@@ -86,6 +110,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-Private-SZ1"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -96,6 +126,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-Private-SZ2"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   # --- NAT Gateway (Para salida a internet desde subnets privadas) ---
   NatEIP:
@@ -103,6 +139,15 @@ Resources:
     DependsOn: VPCGatewayAttachment
     Properties:
       Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-NAT-EIP"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   NatGateway:
     Type: AWS::EC2::NatGateway
@@ -112,6 +157,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-NAT"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   # --- Tablas de Enrutamiento ---
   PublicRouteTable:
@@ -121,6 +172,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-Public-RT"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -137,6 +194,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-Private-RT"
+        - Key: Owner
+          Value: !Ref "AWS::StackName"
+        - Key: TTL
+          Value: "1-Week"
+        - Key: Contact
+          Value: "team@example.com"
 
   PrivateRoute:
     Type: AWS::EC2::Route
